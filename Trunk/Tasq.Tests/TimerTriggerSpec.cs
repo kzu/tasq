@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Moq.Protected;
+using System.Threading;
+
+namespace Tasq.Tests
+{
+	[TestClass]
+	public class TimerTriggerSpec
+	{
+		[TestMethod]
+		public void WhenAddedToJob_ThenTriggersRunAtDueTime()
+		{
+			var job = new Mock<Job>();
+			var trigger = new TimerTrigger
+			{
+				DueTime = TimeSpan.FromMilliseconds(300)
+			};
+
+			job.Object.Triggers.Add(trigger);
+
+			Thread.Sleep(400);
+
+			job.Protected().Verify("Run", Times.Once());
+		}
+	}
+}
