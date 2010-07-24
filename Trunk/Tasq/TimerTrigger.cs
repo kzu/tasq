@@ -26,6 +26,8 @@ namespace Tasq
 				if (value == this.isEnabled)
 					return;
 
+				this.isEnabled = value;
+
 				if (value == true)
 					this.timer.Change(this.DueTime, this.Interval);
 				else
