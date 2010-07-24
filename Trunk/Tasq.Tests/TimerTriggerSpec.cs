@@ -27,5 +27,23 @@ namespace Tasq.Tests
 
 			job.Protected().Verify("Run", Times.Once());
 		}
+
+		[TestMethod]
+		public void WhenTriggerIsDisabled_ThenDoesNotCauseRun()
+		{
+			var job = new Mock<Job>();
+			var trigger = new TimerTrigger
+			{
+				DueTime = TimeSpan.FromMilliseconds(200),
+			};
+
+			job.Object.Triggers.Add(trigger);
+
+			trigger.IsEnabled = false;
+
+			Thread.Sleep(300);
+
+			job.Protected().Verify("Run", Times.Never());
+		}
 	}
 }
