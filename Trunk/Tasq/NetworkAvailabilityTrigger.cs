@@ -68,7 +68,6 @@ namespace Tasq
 		/// <summary>
 		/// Gets or sets a value indicating whether this trigger is enabled.
 		/// </summary>
-		/// <value></value>
 		public bool IsEnabled
 		{
 			get { return this.isEnabled; }

@@ -13,37 +13,37 @@ namespace Tasq.Tests
 	public class TimerTriggerSpec
 	{
 		[TestMethod]
-		public void WhenAddedToJob_ThenTriggersRunAtDueTime()
+		public void WhenTriggerIsEnabled_ThenDoesFire()
 		{
-			var job = new Mock<Job>();
-			var trigger = new TimerTrigger
-			{
-				DueTime = TimeSpan.FromMilliseconds(300)
-			};
-
-			job.Object.Triggers.Add(trigger);
-
-			Thread.Sleep(400);
-
-			job.Protected().Verify("Run", Times.Once());
-		}
-
-		[TestMethod]
-		public void WhenTriggerIsDisabled_ThenDoesNotCauseRun()
-		{
-			var job = new Mock<Job>();
+			var fired = false;
 			var trigger = new TimerTrigger
 			{
 				DueTime = TimeSpan.FromMilliseconds(200),
 			};
 
-			job.Object.Triggers.Add(trigger);
+			trigger.Fired += (sender, args) => fired = true;
+			trigger.IsEnabled = true;
 
+			Thread.Sleep(300);
+
+			Assert.IsTrue(fired);
+		}
+
+		[TestMethod]
+		public void WhenTriggerIsDisabled_ThenDoesFire()
+		{
+			var fired = false;
+			var trigger = new TimerTrigger
+			{
+				DueTime = TimeSpan.FromMilliseconds(200),
+			};
+
+			trigger.Fired += (sender, args) => fired = true;
 			trigger.IsEnabled = false;
 
 			Thread.Sleep(300);
 
-			job.Protected().Verify("Run", Times.Never());
+			Assert.IsFalse(fired);
 		}
 
 		[TestMethod]

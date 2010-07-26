@@ -8,47 +8,72 @@ namespace Tasq
 	/// <summary>
 	/// Manages a list of <see cref="Job"/>s.
 	/// </summary>
-	public class JobManager
+	public class JobManager : IDisposable
 	{
+		private List<Job> jobs;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="JobManager"/> class.
 		/// </summary>
 		public JobManager()
 		{
-			this.Jobs = new List<Job>();
+			this.jobs = new List<Job>();
+		}
+
+		/// <summary>
+		/// Adds the specified job.
+		/// </summary>
+		public virtual void Add(Job job, bool enableJob = true, ApplyTo applyEnableTo = ApplyTo.JobAndTriggers)
+		{
+			this.jobs.Add(job);
+			if (enableJob)
+			{
+				job.Enable(applyEnableTo);
+			}
 		}
 
 		/// <summary>
 		/// Gets the jobs managed by this instance.
 		/// </summary>
-		public IList<Job> Jobs { get; private set; }
+		public virtual IEnumerable<Job> Jobs { get { return this.jobs.AsReadOnly(); } }
 
 		/// <summary>
-		/// Disables all triggers in all jobs.
+		/// Disables all jobs, optionally specifying if all job triggers should be disabled too.
 		/// </summary>
-		public void PauseAll()
+		/// <remarks>By default disables all jobs but does not forcedly disable triggers.</remarks>
+		public virtual void PauseAll(ApplyTo disableAppliesTo = ApplyTo.JobOnly)
 		{
-			Tracing.TraceSource.TraceInformation("Pausing all triggers.");
+			Tracing.TraceSource.TraceInformation("Pausing all jobs.");
 
-			this.Jobs
-				.ForEach(job => Tracing.TraceSource.TraceVerbose("Pausing triggers on job {0}.", job.Identifier))
-				.SelectMany(job => job.Triggers)
-				.Apply(trigger => trigger.IsEnabled = false,
-						after: trigger => Tracing.TraceSource.TraceVerbose("Paused trigger {0}.", trigger));
+			this.jobs
+				.Apply(
+					job => job.Disable(disableAppliesTo),
+					before: job => Tracing.TraceSource.TraceVerbose("Pausing job {0}.", job.Identifier));
 		}
 
 		/// <summary>
-		/// Resumes all triggers in all jobs, by setting their <see cref="ITrigger.IsEnabled"/> to true.
+		/// Resumes all jobs, optionally specifying whether all job triggers should also be forcedly enabled.
 		/// </summary>
-		public void ResumeAll()
+		/// <remarks>By default enables all jobs but does not forcedly enable triggers.</remarks>
+		public virtual void ResumeAll(ApplyTo enableAppliesTo = ApplyTo.JobOnly)
 		{
-			Tracing.TraceSource.TraceInformation("Resuming all triggers.");
+			Tracing.TraceSource.TraceInformation("Resuming all jobs.");
 
-			this.Jobs
-				.ForEach(job => Tracing.TraceSource.TraceVerbose("Resuming triggers on job {0}.", job.Identifier))
-				.SelectMany(job => job.Triggers)
-				.Apply(trigger => trigger.IsEnabled = true,
-						after: trigger => Tracing.TraceSource.TraceVerbose("Resumed trigger {0}.", trigger));
+			this.jobs
+				.Apply(
+					job => job.Enable(enableAppliesTo),
+					before: job => Tracing.TraceSource.TraceVerbose("Resuming job {0}.", job.Identifier));
+		}
+
+		/// <summary>
+		/// Disposes the manager and all disposable jobs.
+		/// </summary>
+		public virtual void Dispose()
+		{
+			this.jobs
+				.Select(job => job as IDisposable)
+				.Where(disposable => disposable != null)
+				.Apply(disposable => disposable.Try(d => d.Dispose()));
 		}
 	}
 }
