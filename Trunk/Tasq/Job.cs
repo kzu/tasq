@@ -30,16 +30,6 @@ namespace Tasq
 		public IList<ITrigger> Triggers { get; private set; }
 
 		/// <summary>
-		/// Executes the job behavior, as specified by a derived class.
-		/// </summary>
-		protected abstract void Run();
-
-		private void OnTriggerFired(object sender, EventArgs e)
-		{
-			Run();
-		}
-
-		/// <summary>
 		/// Disposes this instance and all triggers that are disposable too.
 		/// </summary>
 		public void Dispose()
@@ -47,6 +37,22 @@ namespace Tasq
 			this.Triggers
 				.Select(trigger => trigger as IDisposable)
 				.Apply(disposable => disposable.Try(d => d.Dispose()));
+		}
+
+		/// <summary>
+		/// Executes the job behavior, as specified by a derived class.
+		/// </summary>
+		protected abstract void Run();
+
+		private void OnTriggerFired(object sender, EventArgs e)
+		{
+			Tracing.TraceSource.TraceInformation("Trigger {0} fired. Running job {1}.", sender, this);
+			Run();
+		}
+
+		public override string ToString()
+		{
+			return this.GetType().FullName + " (" + this.Identifier + ")";
 		}
 
 		private class TriggerCollection : Collection<ITrigger>
@@ -73,6 +79,8 @@ namespace Tasq
 
 				item.Fired += this.job.OnTriggerFired;
 				item.IsEnabled = true;
+
+				Tracing.TraceSource.TraceVerbose("Added and enabled trigger: {0} (Job {1}).", item, this.job);
 			}
 
 			protected override void RemoveItem(int index)

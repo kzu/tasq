@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<RootDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Tasq.snk))\</RootDir>
+		<AssemblyOriginatorKeyFile>$(RootDir)Tasq.snk</AssemblyOriginatorKeyFile>
+		<SignAssembly>true</SignAssembly>
+		<DelaySign>false</DelaySign>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<BinariesFolder>$(RootDir)Binaries</BinariesFolder>
+	</PropertyGroup>
+
+	<!-- T4 Targets -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<TransformOnBuild>true</TransformOnBuild>
+		<OverwriteReadOnlyOutputFiles>true</OverwriteReadOnlyOutputFiles>
+	</PropertyGroup>
+	<Import Condition="'$(Configuration)' == 'Release'"
+					Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\TextTemplating\v10.0\Microsoft.TextTemplating.targets" />
+
+	<Target Name="AfterBuild"
+					Condition="!$(AssemblyName.Contains('Test'))">
+		<Exec Command="mkdir &quot;$(BinariesFolder)&quot;"
+					Condition="!(Exists($(BinariesFolder)))"
+					ContinueOnError="true"/>
+		<Copy SourceFiles="$(TargetPath)"
+					DestinationFolder="$(BinariesFolder)"
+					OverwriteReadOnlyFiles="true" />
+	</Target>
+
+</Project>
