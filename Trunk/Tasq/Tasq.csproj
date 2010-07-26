@@ -30,32 +30,46 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Tasq.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionJob.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Guard.cs" />
+    <Compile Include="Properties\InternalsVisibleTo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>InternalsVisibleTo.tt</DependentUpon>
+    </Compile>
     <Compile Include="ITrigger.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="JobManager.cs" />
+    <Compile Include="NetworkAvailabilityTrigger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TimerTrigger.cs" />
     <Compile Include="Tracing.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\PublicKey.ttinclude">
+      <Link>Properties\PublicKey.ttinclude</Link>
+    </None>
+    <None Include="..\Tasq.snk">
+      <Link>Tasq.snk</Link>
+    </None>
+    <None Include="Properties\InternalsVisibleTo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>InternalsVisibleTo.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Tasq.targets))\Tasq.targets" />
 </Project>

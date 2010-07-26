@@ -45,5 +45,25 @@ namespace Tasq.Tests
 
 			job.Protected().Verify("Run", Times.Never());
 		}
+
+		[TestMethod]
+		public void WhenTriggerIsEnabled_ThenFiresAtEveryInterval()
+		{
+			var trigger = new TimerTrigger
+			{
+				DueTime = TimeSpan.FromMilliseconds(100),
+				Interval = TimeSpan.FromMilliseconds(100),
+			};
+
+			var fires = 0;
+			trigger.Fired += (sender, args) => fires++;
+
+			trigger.IsEnabled = true;
+
+			Thread.Sleep(400);
+
+			Assert.IsTrue(fires >= 2);
+		}
+
 	}
 }

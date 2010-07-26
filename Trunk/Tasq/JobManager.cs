@@ -5,13 +5,22 @@ using System.Text;
 
 namespace Tasq
 {
+	/// <summary>
+	/// Manages a list of <see cref="Job"/>s.
+	/// </summary>
 	public class JobManager
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="JobManager"/> class.
+		/// </summary>
 		public JobManager()
 		{
 			this.Jobs = new List<Job>();
 		}
 
+		/// <summary>
+		/// Gets the jobs managed by this instance.
+		/// </summary>
 		public IList<Job> Jobs { get; private set; }
 
 		/// <summary>
@@ -28,6 +37,9 @@ namespace Tasq
 						after: trigger => Tracing.TraceSource.TraceVerbose("Paused trigger {0}.", trigger));
 		}
 
+		/// <summary>
+		/// Resumes all triggers in all jobs, by setting their <see cref="ITrigger.IsEnabled"/> to true.
+		/// </summary>
 		public void ResumeAll()
 		{
 			Tracing.TraceSource.TraceInformation("Resuming all triggers.");
