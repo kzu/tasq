@@ -1,3 +1,8 @@
 glob:*.svclog
 glob:bin/
 glob:obj/
+glob:Binaries/
+glob:*.snk
+glob:PublicKey.ttinclude
+glob:*.pub
+glob:InternalsVisibleTo.cs
