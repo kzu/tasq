@@ -7,7 +7,8 @@ using System.Threading;
 namespace Tasq
 {
 	/// <summary>
-	/// A trigger that fires at specified intervals.
+	/// A trigger that fires at specified intervals. When initially constructed, the 
+	/// trigger is disabled.
 	/// </summary>
 	public class TimerTrigger : ITrigger
 	{
@@ -30,8 +31,7 @@ namespace Tasq
 		/// <summary>
 		/// Gets or sets a value indicating whether this trigger is enabled.
 		/// </summary>
-		/// <value></value>
-		public bool IsEnabled
+		public virtual bool IsEnabled
 		{
 			get { return this.isEnabled; }
 			set
@@ -51,12 +51,20 @@ namespace Tasq
 		/// <summary>
 		/// Gets or sets the due time for the first fire of the trigger.
 		/// </summary>
-		public TimeSpan DueTime { get; set; }
+		public virtual TimeSpan DueTime { get; set; }
 
 		/// <summary>
 		/// Gets or sets the interval for subsequent fires of the trigger after the <see cref="DueTime"/>.
 		/// </summary>
-		public TimeSpan Interval { get; set; }
+		public virtual TimeSpan Interval { get; set; }
+
+		/// <summary>
+		/// Returns a friendly representation of this trigger.
+		/// </summary>
+		public override string ToString()
+		{
+			return string.Format("Timer trigger due in {0} and every {1} interval", this.DueTime, this.Interval);
+		}
 
 		private void OnTick(object state)
 		{

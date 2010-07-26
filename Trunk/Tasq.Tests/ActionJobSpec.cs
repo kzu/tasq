@@ -16,6 +16,7 @@ namespace Tasq.Tests
 			var run = false;
 			var trigger = new Mock<ITrigger>();
 			var job = new ActionJob(() => run = true, trigger.Object);
+			job.Enable(ApplyTo.JobAndTriggers);
 
 			trigger.Raise(x => x.Fired += null, EventArgs.Empty);
 
