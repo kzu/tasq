@@ -24,7 +24,10 @@
 		<Exec Command="mkdir &quot;$(BinariesFolder)&quot;"
 					Condition="!(Exists($(BinariesFolder)))"
 					ContinueOnError="true"/>
-		<Copy SourceFiles="$(TargetPath)"
+		<CreateItem Include="$(OutDir)$(TargetName).*">
+			<Output ItemName="BinariesToCopy" TaskParameter="Include"/>
+		</CreateItem>
+		<Copy SourceFiles="@(BinariesToCopy)"
 					DestinationFolder="$(BinariesFolder)"
 					OverwriteReadOnlyFiles="true" />
 	</Target>
