@@ -7,16 +7,28 @@ using System.Collections.ObjectModel;
 namespace Tasq
 {
 	/// <summary>
-	/// Base class that represents jobs. Triggers can be added or removed from the 
+	/// Base class that represents jobs. Triggers can be added or removed from the
 	/// <see cref="Triggers"/> collection freely at any time.
 	/// </summary>
 	/// <remarks>
-	/// The collection of triggers for a job tracks add/remove operations for triggers, 
-	/// and automatically attaches/detaches from their <see cref="ITrigger.Fire"/> 
+	/// The collection of triggers for a job tracks add/remove operations for triggers,
+	/// and automatically attaches/detaches from their <see cref="ITrigger.Fired"/>
 	/// event.
 	/// </remarks>
 	public abstract class Job : IDisposable
 	{
+		/// <summary>
+		/// Occurs when an unhandled exception is thrown when the job is run.
+		/// </summary>
+		/// <remarks>
+		/// If the exception is not marked as handled via the <see cref="UnhandledExceptionEventArgs.Handled"/> property, 
+		/// the job will be changed to status <see cref="Tasq.Status.Error"/> and will be disabled.
+		/// </remarks>
+		public event EventHandler<UnhandledExceptionEventArgs> UnhandledException = (sender, args) => { };
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Job"/> class.
+		/// </summary>
 		protected Job()
 		{
 			this.Identifier = Guid.NewGuid().ToString();
@@ -43,11 +55,32 @@ namespace Tasq
 		public virtual bool IsEnabled { get; private set; }
 
 		/// <summary>
+		/// Gets the current status of the job.
+		/// </summary>
+		/// <remarks>
+		/// When the status is <see cref="Tasq.Status.Error"/>, the job is automatically 
+		/// disabled. In order to clear the error, it must be enabled via the <see cref="Enable"/> method.
+		/// </remarks>
+		public virtual Status Status { get; private set; }
+
+		/// <summary>
+		/// Gets the last error if the <see cref="Status"/> is <see cref="Tasq.Status.Error"/>.
+		/// </summary>
+		/// <value>The last error.</value>
+		public virtual Exception LastError { get; private set; }
+
+		/// <summary>
 		/// Enables the job, optionally specifying whether all the triggers should be forcedly enabled too.
 		/// </summary>
+		/// <remarks>
+		/// If the job was in <see cref="Tasq.Status.Error"/>, the <see cref="LastError"/> property 
+		/// is cleared and its status is set back to <see cref="Tasq.Status.Idle"/>.
+		/// </remarks>
 		public virtual void Enable(ApplyTo enableAppliesTo = ApplyTo.JobAndTriggers)
 		{
 			this.IsEnabled = true;
+			this.LastError = null;
+			this.Status = Status.Idle;
 			if (enableAppliesTo == ApplyTo.JobAndTriggers)
 				this.Triggers.Apply(trigger => trigger.IsEnabled = true,
 					before: trigger => Tracing.TraceSource.TraceVerbose("Enabling trigger {0}.", trigger));
@@ -77,7 +110,33 @@ namespace Tasq
 		/// <summary>
 		/// Executes the job behavior, as specified by a derived class.
 		/// </summary>
-		protected abstract void Run();
+		protected abstract void OnRun();
+
+		private void Run()
+		{
+			try
+			{
+				this.Status = Status.Running;
+				OnRun();
+				this.Status = Status.Idle;
+			}
+			catch (Exception ex)
+			{
+				var args = new UnhandledExceptionEventArgs(ex);
+				UnhandledException(this, args);
+
+				if (!args.Handled)
+				{
+					this.Disable(ApplyTo.JobOnly);
+					this.LastError = ex;
+					this.Status = Status.Error;
+				}
+				else
+				{
+					this.Status = Status.Idle;
+				}
+			}
+		}
 
 		private void OnTriggerFired(object sender, EventArgs e)
 		{
@@ -92,6 +151,9 @@ namespace Tasq
 			}
 		}
 
+		/// <summary>
+		/// Returns a <see cref="System.String"/> that represents this instance.
+		/// </summary>
 		public override string ToString()
 		{
 			return this.GetType().FullName + " (" + this.Identifier + ")";

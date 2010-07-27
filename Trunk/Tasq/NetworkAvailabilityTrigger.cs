@@ -39,6 +39,9 @@ namespace Tasq
 		private INetworkStatus networkStatus;
 		private bool isEnabled;
 
+		/// <summary>
+		/// Occurs when the trigger fires.
+		/// </summary>
 		public event EventHandler Fired = (sender, args) => { };
 
 		/// <summary>
