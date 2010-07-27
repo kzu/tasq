@@ -51,7 +51,7 @@ namespace Tasq
 		/// <summary>
 		/// Executes the <see cref="Action"/>.
 		/// </summary>
-		protected override void Run()
+		protected override void OnRun()
 		{
 			this.Action.Try(action => action());
 		}
