@@ -7,3 +7,5 @@ glob:PublicKey.ttinclude
 glob:*.pub
 glob:InternalsVisibleTo.cs
 glob:Tasq.xml
+glob:*.suo
+glob:*.user
