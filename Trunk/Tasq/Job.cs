@@ -112,6 +112,30 @@ namespace Tasq
 		/// </summary>
 		protected abstract void OnRun();
 
+		/// <summary>
+		/// Called when an unhandled exception occurs in <see cref="OnRun"/> 
+		/// and raises the <see cref="UnhandledException"/> event, processing the 
+		/// resulting <see cref="UnhandledExceptionEventArgs.Handled"/> flag.
+		/// </summary>
+		/// <param name="ex">The ex.</param>
+		protected virtual void OnUnhandledException(Exception ex)
+		{
+			var args = new UnhandledExceptionEventArgs(ex);
+			UnhandledException(this, args);
+
+			if (!args.Handled)
+			{
+				this.Disable(ApplyTo.JobOnly);
+				this.LastError = ex;
+				this.Status = Status.Error;
+			}
+			else
+			{
+				this.LastError = null;
+				this.Status = Status.Idle;
+			}
+		}
+
 		private void Run()
 		{
 			try
@@ -122,19 +146,7 @@ namespace Tasq
 			}
 			catch (Exception ex)
 			{
-				var args = new UnhandledExceptionEventArgs(ex);
-				UnhandledException(this, args);
-
-				if (!args.Handled)
-				{
-					this.Disable(ApplyTo.JobOnly);
-					this.LastError = ex;
-					this.Status = Status.Error;
-				}
-				else
-				{
-					this.Status = Status.Idle;
-				}
+				OnUnhandledException(ex);
 			}
 		}
 
