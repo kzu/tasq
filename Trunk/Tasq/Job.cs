@@ -125,7 +125,6 @@ namespace Tasq
 
 			if (!args.Handled)
 			{
-				this.Disable(ApplyTo.JobOnly);
 				this.LastError = ex;
 				this.Status = Status.Error;
 			}
@@ -133,6 +132,7 @@ namespace Tasq
 			{
 				this.LastError = null;
 				this.Status = Status.Idle;
+				this.IsEnabled = true;
 			}
 		}
 
@@ -140,9 +140,14 @@ namespace Tasq
 		{
 			try
 			{
-				this.Status = Status.Running;
-				OnRun();
-				this.Status = Status.Idle;
+				lock (this)
+				{
+					this.IsEnabled = false;
+					this.Status = Status.Running;
+					OnRun();
+					this.Status = Status.Idle;
+					this.IsEnabled = true;
+				}
 			}
 			catch (Exception ex)
 			{

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Threading;
 
 namespace Tasq.Tests
 {
@@ -182,6 +183,23 @@ namespace Tasq.Tests
 			trigger.Raise(x => x.Fired += null, EventArgs.Empty);
 
 			job.Verify(x => x.DoRun());
+		}
+
+		[TestMethod]
+		public void WhenJobIsRunning_ThenOtherTriggerEventsDoNotCauseRun()
+		{
+			var job = new Mock<TestJob> { CallBase = true };
+			job.Object.Triggers.Add(new TimerTrigger { DueTime = TimeSpan.FromMilliseconds(200), Interval = TimeSpan.FromMilliseconds(500) });
+			job.Object.Triggers.Add(new TimerTrigger { DueTime = TimeSpan.FromMilliseconds(300), Interval = TimeSpan.FromMilliseconds(500) });
+			job.Object.Triggers.Add(new TimerTrigger { DueTime = TimeSpan.FromMilliseconds(400), Interval = TimeSpan.FromMilliseconds(500) });
+
+			job.Setup(x => x.DoRun()).Callback(() => Thread.Sleep(1000));
+			job.Object.Enable(ApplyTo.JobAndTriggers);
+
+			Thread.Sleep(1100);
+			job.Object.Disable(ApplyTo.JobOnly);
+
+			job.Verify(x => x.DoRun(), Times.Once());
 		}
 
 		public abstract class TestJob : Job
