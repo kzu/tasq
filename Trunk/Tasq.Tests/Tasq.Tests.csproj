@@ -63,6 +63,7 @@
     <Compile Include="NetworkAvailabilityTriggerSpec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TimerTriggerSpec.cs" />
+    <Compile Include="TriggerExtensionsSpec.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Tasq\Tasq.csproj">
