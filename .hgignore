@@ -9,3 +9,4 @@ glob:InternalsVisibleTo.cs
 glob:Tasq.xml
 glob:*.suo
 glob:*.user
+glob:TestResults/

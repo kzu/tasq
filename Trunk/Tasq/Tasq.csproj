@@ -58,6 +58,7 @@
     <Compile Include="Status.cs" />
     <Compile Include="TimerTrigger.cs" />
     <Compile Include="Tracing.cs" />
+    <Compile Include="TriggerExtensions.cs" />
     <Compile Include="UnhandledExceptionEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
