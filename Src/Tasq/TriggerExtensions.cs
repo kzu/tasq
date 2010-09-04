@@ -5,19 +5,33 @@ using System.Text;
 
 namespace Tasq
 {
+	/// <summary>
+	/// Extensions for triggers.
+	/// </summary>
 	public static class TriggerExtensions
 	{
+		/// <summary>
+		/// Enables the given <paramref name="target"/> trigger whenever the 
+		/// <paramref name="condition"/> trigger fires.
+		/// </summary>
 		public static ITrigger EnableWhen(this ITrigger target, ITrigger condition)
 		{
 			return new ConditionalTrigger(target, condition, true);
 		}
 
+		/// <summary>
+		/// Disables the given <paramref name="target"/> trigger whenever the 
+		/// <paramref name="condition"/> trigger fires.
+		/// </summary>
 		public static ITrigger DisableWhen(this ITrigger target, ITrigger condition)
 		{
 			return new ConditionalTrigger(target, condition, false);
 		}
 
-		public class ConditionalTrigger : ITrigger
+		/// <summary>
+		/// Internal implementation of the conditional triggers.
+		/// </summary>
+		private class ConditionalTrigger : ITrigger
 		{
 			public event EventHandler Fired = (sender, args) => { };
 

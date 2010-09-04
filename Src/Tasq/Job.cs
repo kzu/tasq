@@ -29,10 +29,17 @@ namespace Tasq
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Job"/> class.
 		/// </summary>
-		protected Job()
+		/// <param name="isEnabled">Optional state to set for the job and its triggers.</param>
+		/// <param name="isEnabledAppliesTo">The is enabled applies to.</param>
+		/// <param name="triggers">The triggers.</param>
+		protected Job(bool isEnabled = true, ApplyTo isEnabledAppliesTo = ApplyTo.JobAndTriggers, params ITrigger[] triggers)
 		{
 			this.Identifier = Guid.NewGuid().ToString();
 			this.Triggers = new TriggerCollection(this);
+
+			this.Triggers.AddRange(triggers);
+			if (isEnabled)
+				this.Enable(isEnabledAppliesTo);
 		}
 
 		/// <summary>
@@ -157,14 +164,17 @@ namespace Tasq
 
 		private void OnTriggerFired(object sender, EventArgs e)
 		{
-			if (this.IsEnabled)
+			lock (this)
 			{
-				Tracing.TraceSource.TraceInformation("Trigger {0} fired. Running job {1}.", sender, this);
-				Run();
-			}
-			else
-			{
-				Tracing.TraceSource.TraceInformation("Trigger {0} fired but job {1} is disabled.", sender, this);
+				if (this.IsEnabled)
+				{
+					Tracing.TraceSource.TraceInformation("Trigger {0} fired. Running job {1}.", sender, this);
+					Run();
+				}
+				else
+				{
+					Tracing.TraceSource.TraceInformation("Trigger {0} fired but job {1} is disabled.", sender, this);
+				}
 			}
 		}
 

@@ -26,13 +26,11 @@ namespace Tasq
 		/// Initializes a new instance of the <see cref="ActionJob"/> class.
 		/// </summary>
 		public ActionJob(Action action, bool isEnabled = true, ApplyTo isEnabledAppliesTo = ApplyTo.JobAndTriggers, params ITrigger[] triggers)
+			: base(isEnabled, isEnabledAppliesTo, triggers)
 		{
 			Guard.NotNull(() => action, action);
 
 			this.action = action;
-			this.Triggers.AddRange(triggers);
-			if (isEnabled)
-				this.Enable(isEnabledAppliesTo);
 		}
 
 		/// <summary>
